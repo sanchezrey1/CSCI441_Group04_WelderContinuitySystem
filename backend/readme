@@ -23,4 +23,20 @@ On every page you should check for a role to exist. If no role then send to logi
 
 On every admin page you should check for admin by payload.role == "ADMIN_CWI"
 
+to install Python packages
+  # 1. clone the repo
+  git clone your-repo-url
+  
+  # 2. create a virtual environment
+  python -m venv venv
+  
+  # 3. activate it
+  venv\Scripts\activate        # Windows
+  source venv/bin/activate     # Mac/Linux
+  
+  # 4. install everything
+  pip install -r requirements.txt
+  
+  # 5. run the server
+  uvicorn login:app --reload
 
