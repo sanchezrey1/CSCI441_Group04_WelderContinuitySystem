@@ -6,6 +6,7 @@ from jose import jwt, JWTError
 import sqlite3
 from pathlib import Path
 from pydantic import BaseModel
+from backend.dashboard import router as dashboard_router
 
 # Create the FastAPI app - this is the thing that listens for requests from React
 app = FastAPI()
@@ -18,6 +19,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(dashboard_router)
 
 # keep secret key in since it's a simple local project
 SECRET_KEY = "secret_key"
