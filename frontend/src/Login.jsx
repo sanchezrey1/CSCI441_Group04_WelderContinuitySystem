@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {useNavigate } from "react-router-dom"
-import { login, register } from '../../services/api'
-import { getTokenPayload } from "../../services/api"
+import { login, register, getTokenPayload } from '../../services/api'
+import { isLoggedIn } from "../../services/helpers"
 
 
 function LoginApp() {
@@ -9,7 +9,18 @@ function LoginApp() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [credentials, setCredentials] = useState(null)
   let navigate = useNavigate();
+
+//check if user is logged in and return to login page if not
+  useEffect( () => {
+    const p = isLoggedIn()
+      if(p){
+        navigate("/dashboard");
+        return;
+      }
+    setCredentials(p);
+  },[] );
 
   async function handleLogin(){
     try {
@@ -25,15 +36,12 @@ function LoginApp() {
 
       const payload = getTokenPayload();
     
-      if(payload.role === "ADMIN_CWI"){
-        navigate("/admin")
-      } else {
-        navigate("/dashboard")
-      }
+      navigate("/dashboard")
+   
   }
   catch (err){
     console.error("Request failed: ", err.message);
-    setError("somwthing went wrong");
+    setError("something went wrong");
   }
 }
   
@@ -58,19 +66,37 @@ function LoginApp() {
   }
 
   return (
-    <>
-      <h1>LOGIN</h1>
-      <form onSubmit={clearInput}>
-        <label>Email:</label>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Username"/>
-        <label>Password</label>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password"/>
-        
-        <button onClick={handleLogin}>Login</button>
-        <button onClick={handleRegister}>Register</button>
-      </form>
-    </>
-  )
+  <div className="login-page">
+    <div className="login-card">
+      <div className="login-title">Compliance Portal</div>
+      <div className="login-subtitle">Welder Qualification System</div>
+
+      <label className="login-label">Email</label>
+      <input
+        className="login-input"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="you@example.com"
+      />
+
+      <label className="login-label">Password</label>
+      <input
+        className="login-input"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="••••••••"
+      />
+
+      {error && <div className="login-error">{error}</div>}
+
+      <button className="btn-login" onClick={handleLogin}>Login</button>
+      <button className="btn-register" onClick={handleRegister}>Register</button>
+    </div>
+  </div>
+)
+  
 }
 
 export default LoginApp

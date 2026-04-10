@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom"
 import {logout} from "../../services/api"
-import { getTokenPayload } from "../../services/api";
+import { isLoggedIn } from "../../services/helpers";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const API_BASE = "http://localhost:8000/api";
@@ -120,19 +120,17 @@ export default function Dashboard() {
   const [error, setError]     = useState(null);
   const [lastRefresh, setLastRefresh] = useState(null);
   const intervalRef = useRef(null);
-  const [payload, setPayload] = useState(null);
+  const [credentials, setCredentials] = useState(null);
   const navigate = useNavigate();
     
   //check if user is logged in and return to login page if not
   useEffect( () => {
-    const p = getTokenPayload()
-    
-      if(!p) {
-          navigate("/")
-          return
+    const p = isLoggedIn()
+      if(!p){
+        navigate("/");
+        return;
       }
-      
-      setPayload(p)
+    setCredentials(p);
   },[] );
 
   function handleLogout(){
@@ -205,7 +203,7 @@ export default function Dashboard() {
           <button onClick={fetchDashboard} className="btn-refresh">
             ↻ Refresh
           </button>
-          <button onClick={handleLogout}>Logout</button>
+          <button onClick={handleLogout} className="btn-logout">Logout</button>
         </div>
       </div>
 

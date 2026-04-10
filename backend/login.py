@@ -7,6 +7,7 @@ import sqlite3
 from pathlib import Path
 from pydantic import BaseModel
 from backend.dashboard import router as dashboard_router
+from backend.welderList import router as welderlist_router
 
 # Create the FastAPI app - this is the thing that listens for requests from React
 app = FastAPI()
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(dashboard_router)
+app.include_router(welderlist_router)
 
 # keep secret key in since it's a simple local project
 SECRET_KEY = "secret_key"

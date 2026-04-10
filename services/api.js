@@ -2,7 +2,8 @@ const BASE_URL = "http://localhost:8000"
 
 //helper function so we dont repeat the token logic everywhere
 
-
+//if logged in, returns the payload of the JWT token containing
+// user role and email ("sub")
 export function getTokenPayload(){
     const token = localStorage.getItem("token");
 
@@ -33,4 +34,10 @@ export async function login(email, password){
 
 export function logout(){
     localStorage.removeItem("token");
+}
+
+export async function getWelders(){
+    const res = await fetch(`${BASE_URL}/api/welderlist`);
+    if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+    return await res.json();
 }

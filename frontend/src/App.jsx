@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route} from 'react-router-dom';
 import Dashboard from "./Dashboard";
 import LoginApp from './Login';
+import WelderListApp from './WelderList';
 import "./Dashboard.css";
+
 
 export default function App() {
   return(
@@ -9,6 +11,7 @@ export default function App() {
             <Routes>
                 <Route path="/"          element={<LoginApp />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/welderlist" element={<WelderListApp/>}/>
             </Routes>
         </BrowserRouter>
   )

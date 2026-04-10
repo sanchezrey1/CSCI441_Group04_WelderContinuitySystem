@@ -130,7 +130,7 @@ def get_dashboard():
 
     # Seed demo data on first run
     seed_demo_data(conn)
-
+    
     rows = conn.execute("""
         SELECT
             q.qualification_id,

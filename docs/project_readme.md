@@ -173,8 +173,16 @@ I could not add `user: dict = Depends(get_current_user)` as a parameter to the `
 
 I added Routing to the React App file to make it easier to navigate between files using the provided functions
 
-I added the Login page. It still needs styling.
-
 Now the /dashboard link checks for a user to be logged in before loading. If not logged in it redirects to log in page
 
 added a logout button to the dashboard. Needs Styling.
+
+### La Aries NOTES FROM FRIDAY 4/10/2026
+
+styled the login page and added an error message for invalid logins
+
+still need to add a check for a valid email format when registering and password requirements
+
+created the welder list page containing all the welders styled similarly to the dashboard. need to add a search bar.
+
+Need to add a sidebar for page navigation as well.
