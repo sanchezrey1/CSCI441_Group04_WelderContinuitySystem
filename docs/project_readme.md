@@ -186,3 +186,5 @@ still need to add a check for a valid email format when registering and password
 created the welder list page containing all the welders styled similarly to the dashboard. need to add a search bar.
 
 Need to add a sidebar for page navigation as well.
+
+Need to make it so that warning message goes away in login menu after pressing another button

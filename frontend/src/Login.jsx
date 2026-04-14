@@ -3,12 +3,12 @@ import {useNavigate } from "react-router-dom"
 import { login, register, getTokenPayload } from '../../services/api'
 import { isLoggedIn } from "../../services/helpers"
 
-
 function LoginApp() {
   
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("");
   const [credentials, setCredentials] = useState(null)
   let navigate = useNavigate();
 
@@ -22,12 +22,15 @@ function LoginApp() {
     setCredentials(p);
   },[] );
 
+
   async function handleLogin(){
+    setError("");
     try {
       const data = await login(email, password)
       
       if (data.detail){
-        error
+        setEmail('');
+        setPassword('');
         setError(data.detail)
         return
       }
@@ -46,12 +49,16 @@ function LoginApp() {
 }
   
   async function handleRegister(){
+    setError("");
     try{
       const data = await register(email, password)
       if (data.detail){ //if error exists
         setError(data.detail)
         return
       }
+      setSuccess("Registration successful!")
+      setEmail('');
+      setPassword('');
       
     } catch (err){
     console.error("Request failed: ", err.message);
@@ -90,6 +97,7 @@ function LoginApp() {
       />
 
       {error && <div className="login-error">{error}</div>}
+      {success && <div className="login-success">{success}</div>}
 
       <button className="btn-login" onClick={handleLogin}>Login</button>
       <button className="btn-register" onClick={handleRegister}>Register</button>

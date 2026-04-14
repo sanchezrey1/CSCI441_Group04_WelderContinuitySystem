@@ -1,120 +1,143 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getWelders } from "../../services/api"
+import { getWelders, logout } from "../../services/api";
 import { isLoggedIn } from "../../services/helpers";
-import {logout} from "../../services/api"
+import { Sidebar } from "./Dashboard";
+
 // ── Status badge ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
   const map = {
     IN_STATUS: { label: "In Status", cls: "badge-good" },
     AT_RISK:   { label: "At Risk",   cls: "badge-warn" },
-    EXPIRED:   { label: "Expired qualification(s)",   cls: "badge-bad"  },
+    EXPIRED:   { label: "Expired",   cls: "badge-bad"  },
   };
   const { label, cls } = map[status] ?? { label: status, cls: "" };
   return <span className={`badge ${cls}`}>{label}</span>;
 }
 
+// ── Welder card ───────────────────────────────────────────────────────────────
 function WelderCard({ item }) {
-  const inStatus = item.worst_status === "IN_STATUS";
-  const isAtRisk = item.worst_status === "AT_RISK";
-  const isExpired = item.worst_status === "EXPIRED";
-  
-  const cardStatus = {
+  const cardClass = {
     IN_STATUS: "card-in-status",
     AT_RISK:   "card-at-risk",
     EXPIRED:   "card-expired",
-}[item.worst_status] ?? "card-in-status";
+  }[item.worst_status] ?? "card-in-status";
+
   return (
-    <div className={`action-card ${cardStatus}`}>
+    <div className={`action-card ${cardClass}`}>
       <div className="action-card-top">
         <StatusBadge status={item.worst_status} />
         <span className="action-card-dept">{item.department}</span>
       </div>
       <div className="action-card-name">{item.name}</div>
       <div className="action-card-sub">ID: {item.employee_id}</div>
-      <div className="total-qualifications"></div>
+      <div className="action-card-desc">
+        {item.total_qualifications} qualification{item.total_qualifications !== 1 ? "s" : ""}
+      </div>
     </div>
   );
 }
 
-function WelderListApp() {
-    const [welders, setWelders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [credentials, setCredentials] = useState(null);
-    const [lastRefresh, setLastRefresh] = useState(null);
-    const navigate = useNavigate();
+// ── Main WelderList ───────────────────────────────────────────────────────────
+export default function WelderListApp() {
+  const [welders, setWelders]   = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState(null);
+  const [search, setSearch]     = useState("");
+  const [lastRefresh, setLastRefresh] = useState(null);
+  const navigate = useNavigate();
+  
 
-//check if user is logged in and return to login page if not
-  useEffect( () => {
-    const p = isLoggedIn()
-      if(!p){
-        navigate("/");
-        return;
-      }
-    setCredentials(p);
-  },[] );
+  useEffect(() => {
+    const p = isLoggedIn();
+    if (!p) { navigate("/"); return; }
+  }, []);
 
-    const weldersList = async () => {
-        try{
-            const data = await getWelders();
-            setWelders(data.welders);
-            setLoading(false);
-        } 
-        catch(error){
-            setError(error.message);
-            setLoading(false);
-        }
+  const fetchWelders = async () => {
+    try {
+      const data = await getWelders();
+      setWelders(data.welders);
+      setLastRefresh(new Date());
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    
-    
-    useEffect(() => {
-        weldersList(); 
-        setLastRefresh(new Date());
-    },[])
+  };
 
-    function handleLogout(){
+  function handleLogout() {
     logout();
     navigate("/");
   }
 
-    if(loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
+  useEffect(() => { fetchWelders(); }, []);
 
-    return (
-        <div className="dashboard">
-        {/* ── Header ─────────────────────────────────────────────────────────── */}
-        <div className="dash-header">
-            <div>
-                <h1 className="dash-title">Compliance Dashboard</h1>
-                <p className="dash-subtitle">Welder Qualification &amp; Continuity Status</p>
-            </div>
-            <div className="dash-header-right">
-            {lastRefresh && (
-                <span className="last-refresh">
-                Updated {lastRefresh.toLocaleTimeString()}
-                </span>
-            )}
-            <button onClick={weldersList} className="btn-refresh">
-                ↻ Refresh
-            </button>
-            <button onClick={handleLogout} className="btn-logout">Logout</button>
-            </div>
+  const filtered = welders.filter(w =>
+    w.name.toLowerCase().includes(search.toLowerCase()) ||
+    w.employee_id.toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (loading) return (
+    <div className="app-shell">
+      <Sidebar active="Welder List" />
+      <main className="main-content">
+        <div className="dash-loading"><div className="spinner" /><p>Loading…</p></div>
+      </main>
+    </div>
+  );
+
+  if (error) return (
+    <div className="app-shell">
+      <Sidebar active="Welder List" />
+      <main className="main-content">
+        <div className="dash-error">
+          <div className="error-icon">⚠</div>
+          <h3>Could not load welders</h3>
+          <p>{error}</p>
+          <button onClick={fetchWelders} className="btn-retry">Retry</button>
         </div>
-       
+      </main>
+    </div>
+  );
 
-            <div className="list-section">
+  return (
+    <div className="app-shell">
+      <Sidebar active="Welder List" />
+      <main className="main-content">
+
+        <div className="topbar">
+          <div className="topbar-search">
+            <span className="search-icon">🔍</span>
+            <input className="search-input" placeholder="Search by name or ID"
+              value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          {lastRefresh && (
+            <span className="topbar-right">
+              Updated {lastRefresh.toLocaleTimeString()}
+            </span>
+          )}
+          <button onClick={handleLogout} className="btn-logout">Logout</button>
+        </div>
+
+        <div className="page-body">
+          <h2 className="section-title">
+            All Welders
+            <span style={{ fontWeight: 400, color: "var(--muted)" }}>
+              ({filtered.length})
+            </span>
+          </h2>
+          {filtered.length === 0 ? (
+            <div className="action-empty">No welders found.</div>
+          ) : (
             <div className="welder-grid">
-                {welders.map((item, i) => (
-                  <WelderCard key={`${item.welder_id}-${i}`} item={item} />
-                ))}
-              </div>
+              {filtered.map((item, i) => (
+                <WelderCard key={`${item.welder_id}-${i}`} item={item} />
+              ))}
             </div>
-       </div>
-    )
+          )}
+        </div>
+
+      </main>
+    </div>
+  );
 }
-
-//FIX: figure out how to get data now that python is changed
-export default WelderListApp
-
-
