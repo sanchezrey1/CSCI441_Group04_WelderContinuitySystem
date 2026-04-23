@@ -3,6 +3,7 @@ import Dashboard from "./Dashboard";
 import LoginApp from './Login';
 import WelderListApp from './WelderList';
 import "./Dashboard.css";
+import AddWelder from "./AddWelder";
 
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
                 <Route path="/"          element={<LoginApp />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/welderlist" element={<WelderListApp/>}/>
+                <Route path="/add-welder" element={<AddWelder />} />
             </Routes>
         </BrowserRouter>
   )

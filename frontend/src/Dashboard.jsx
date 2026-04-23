@@ -33,7 +33,7 @@ export function Sidebar({ active }) {
         ))}
       </nav>
       <div className="sidebar-bottom">
-        <button className="sidebar-add" onClick={() => onNavigate("Add Welder")}>
+        <button className="sidebar-add" onClick={() => navigate("/add-welder")}>
           + Add Welder
         </button>
       </div>

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 import sqlite3
 from pathlib import Path
 from datetime import date, timedelta
-
+from pydantic import BaseModel
 
 router = APIRouter()
 DB_PATH = Path(__file__).parent.parent / "db" / "myapp.db"
@@ -30,7 +30,6 @@ def compute_status(expiration_date_str: str) -> str:
     if exp <= today + timedelta(days=30):
         return "AT_RISK"
     return "IN_STATUS"
-
 
 @router.get("/api/welderlist")
 def welderList():
@@ -67,11 +66,46 @@ def welderList():
             "worst_status":            r["worst_status"],
             "total_qualifications": r["total_qualifications"]
         })
-        
     
     conn.close()
-    
-    return {"welders" : welders}
+    return {"welders": welders}
+
+#POST Model
+class WelderCreate(BaseModel):
+    employee_id: str
+    first_name: str
+    last_name: str
+    department: str
+    hire_date: str
+
+@router.post("/api/welders")
+def add_welder(welder: WelderCreate):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO welders
+            (employee_id, first_name, last_name, department, employment_status, hire_date)
+            VALUES (?, ?, ?, ?, 'Active', ?)
+        """, (
+            welder.employee_id,
+            welder.first_name,
+            welder.last_name,
+            welder.department,
+            welder.hire_date
+        ))
+
+        conn.commit()
+
+        welder_id = cursor.lastrowid
+        return {"message": "Welder added", "welder_id": welder_id}
+
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=400, detail="Employee ID already exists")
+ 
+    finally:
+        conn.close()
     
     
     
