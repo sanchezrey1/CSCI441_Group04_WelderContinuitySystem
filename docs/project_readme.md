@@ -141,6 +141,7 @@ On first run, `dashboard.py` automatically seeds the database with 15 demo welde
 - Any new qualifications you insert will automatically appear on the dashboard on next refresh
 
 ### Rachel (Welder Records)
+4/23/2026 - added basic functionality for Add Welder, more edits to come
 - Dashboard reads from `welders`, `qualifications`, `processes`, and `codes` tables using the shared `db/myapp.db`
 - Make sure new welders are inserted with `employment_status = 'Active'` — the dashboard filters out inactive welders
 - The demo seed data in `dashboard.py` uses `INSERT OR IGNORE` so it won't conflict with real records you add
