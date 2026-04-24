@@ -14,6 +14,8 @@ export function Sidebar({ active }) {
   function handleNavigate(page) {
     if (page === "Dashboard")   navigate("/dashboard");
     if (page === "Welder List") navigate("/welderlist");
+    if (page === "Notifications") navigate("/notifications");
+    if (page === "Settings") navigate("/settings");
   }
 
   const links = ["Dashboard", "Welder List", "Notifications", "Settings"];
@@ -119,6 +121,11 @@ export default function Dashboard() {
   const intervalRef = useRef(null);
   const navigate = useNavigate();
 
+  function handleLogout() {
+    logout();
+    navigate("/");
+  }
+
   useEffect(() => {
     const p = isLoggedIn();
     if (!p) { navigate("/"); return; }
@@ -143,15 +150,26 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchDashboard();
-    intervalRef.current = setInterval(fetchDashboard, 60_000);
-    return () => clearInterval(intervalRef.current);
-  }, []);
+  fetchDashboard();
 
-  function handleLogout() {
-    logout();
-    navigate("/");
+  let savedSettings = null;
+
+  try {
+    savedSettings = JSON.parse(localStorage.getItem("systemSettings"));
+  } catch {
+    savedSettings = null;
   }
+
+  if (savedSettings?.autoRefresh !== "Disabled") {
+    intervalRef.current = setInterval(fetchDashboard, 60_000);
+  }
+
+  return () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+  };
+}, []);
 
   if (loading) return (
     <div className="app-shell">

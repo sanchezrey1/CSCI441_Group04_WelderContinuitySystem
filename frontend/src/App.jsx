@@ -4,6 +4,8 @@ import LoginApp from './Login';
 import WelderListApp from './WelderList';
 import "./Dashboard.css";
 import AddWelder from "./AddWelder";
+import Notifications from "./Notifications";
+import Settings from "./Settings";
 
 
 export default function App() {
@@ -14,6 +16,8 @@ export default function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/welderlist" element={<WelderListApp/>}/>
                 <Route path="/add-welder" element={<AddWelder />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/settings" element={<Settings />} />
             </Routes>
         </BrowserRouter>
   )
