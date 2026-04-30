@@ -318,6 +318,10 @@ body {
 .days-at-risk { background: rgba(217,119,6,0.12);  color: var(--warn); }
 .days-expired { background: rgba(220,38,38,0.12);  color: var(--bad);  }
 
+.action-card-link {
+  text-decoration: none;
+  color: inherit;
+}
 /* ── Welder grid ─────────────────────────────────────────────────────────── */
 .welder-grid {
   display: grid;
@@ -446,10 +450,195 @@ body {
   background-color: white;
 }
 
+/* ── WelderProfile ──────────────────────────────────────────── */
+
+.wp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* ── Shared card base ── */
+.wp-card {
+  background: #e8e8e8;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+/* ── Top row ── */
+.wp-top-row {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.wp-spacer {
+  flex: 1;
+}
+
+/* Info card */
+.wp-info-card {
+  flex: 0 0 auto;
+  min-width: 220px;
+  border: 2px dashed #90caf9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wp-info-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wp-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.wp-id {
+  font-size: 0.78rem;
+  color: #555;
+}
+
+.wp-divider {
+  height: 1px;
+  background: #ccc;
+}
+
+.wp-info-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wp-dept {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.wp-meta {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+/* Status card */
+.wp-status-card {
+  flex: 0 0 auto;
+  min-width: 160px;
+  border: 2px dashed #90caf9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.wp-status-label {
+  font-size: 0.82rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.wp-status-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.wp-percent-card {
+  flex: 0 0 auto;
+  min-width: 160px;
+  border: 2px dashed #90caf9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wp-percent-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wp-percent-title {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.wp-percent-num {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Status colour variants */
+.status--expired  .wp-status-value { color: #d32f2f; }
+.status--at-risk  .wp-status-value { color: #e65100; }
+.status--compliant .wp-status-value { color: #2e7d32; }
+
+/* ── Bottom row – counts ── */
+.wp-bottom-row {
+  display: flex;
+  gap: 16px;
+}
+
+.wp-count-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+}
+
+.wp-count-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.wp-count-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.wp-count--expired  .wp-count-num { color: #d32f2f; }
+.wp-count--at-risk  .wp-count-num { color: #e65100; }
+.wp-count--compliant .wp-count-num { color: #2e7d32; }
+
+/* ── WelderProfile responsive ── */
+.wp-top-row {
+  flex-wrap: wrap;  /* add this */
+}
+
+.wp-info-card,
+.wp-status-card,
+.wp-percent-card {
+  flex: 1 1 180px;  /* allow growing and shrinking, min 180px */
+  min-width: 0;     /* override the fixed min-width */
+}
+
+.wp-bottom-row {
+  flex-wrap: wrap;  /* add this */
+}
+
+.wp-count-card {
+  flex: 1 1 140px;  /* allow shrinking */
+  min-width: 0;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 700px) {
   .sidebar { display: none; }
   .stat-grid { grid-template-columns: 1fr; }
   .chart-row { grid-template-columns: 1fr; }
   .welder-grid { grid-template-columns: 1fr; }
+  .wp-top-row,
+  .wp-bottom-row {
+    flex-direction: column;
+  }
 }

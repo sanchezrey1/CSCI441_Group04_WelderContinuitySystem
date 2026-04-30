@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { getWelders, logout } from "../../services/api";
 import { isLoggedIn } from "../../services/helpers";
 import { Sidebar } from "./Dashboard";
+import { FaFilter } from "react-icons/fa";
+import * as React from 'react';
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import {Link} from "react-router-dom"
 
 // ── Status badge ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
@@ -24,17 +30,20 @@ function WelderCard({ item }) {
   }[item.worst_status] ?? "card-in-status";
 
   return (
-    <div className={`action-card ${cardClass}`}>
-      <div className="action-card-top">
-        <StatusBadge status={item.worst_status} />
-        <span className="action-card-dept">{item.department}</span>
+    
+     <Link className="action-card-link" to={`/welderCard/${item.welder_id}`}>
+      <div className={`action-card ${cardClass}`} >
+        <div className="action-card-top">
+          <StatusBadge status={item.worst_status} />
+          <span className="action-card-dept">{item.department}</span>
+        </div>
+        <div className="action-card-name">{item.name}</div>
+        <div className="action-card-sub">ID: {item.employee_id}</div>
+        <div className="action-card-desc">
+          {item.total_qualifications} qualification{item.total_qualifications !== 1 ? "s" : ""}
+        </div>
       </div>
-      <div className="action-card-name">{item.name}</div>
-      <div className="action-card-sub">ID: {item.employee_id}</div>
-      <div className="action-card-desc">
-        {item.total_qualifications} qualification{item.total_qualifications !== 1 ? "s" : ""}
-      </div>
-    </div>
+   </Link>
   );
 }
 
@@ -46,7 +55,16 @@ export default function WelderListApp() {
   const [search, setSearch]     = useState("");
   const [lastRefresh, setLastRefresh] = useState(null);
   const navigate = useNavigate();
-  
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [statusFilter, setStatusFilter] = useState("")
+
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   useEffect(() => {
     const p = isLoggedIn();
@@ -72,11 +90,14 @@ export default function WelderListApp() {
 
   useEffect(() => { fetchWelders(); }, []);
 
-  const filtered = welders.filter(w =>
-    w.name.toLowerCase().includes(search.toLowerCase()) ||
-    w.employee_id.toLowerCase().includes(search.toLowerCase())
-  );
-
+  const filtered = welders.filter(w => {
+  return statusFilter === ""
+    ? (w.name.toLowerCase().includes(search.toLowerCase()) ||
+       w.employee_id.toLowerCase().includes(search.toLowerCase()))
+    : (w.worst_status.includes(statusFilter) &&
+       (w.name.toLowerCase().includes(search.toLowerCase()) ||
+        w.employee_id.toLowerCase().includes(search.toLowerCase())));
+});
   if (loading) return (
     <div className="app-shell">
       <Sidebar active="Welder List" />
@@ -106,6 +127,35 @@ export default function WelderListApp() {
       <main className="main-content">
 
         <div className="topbar">
+          <div className="topbar-filter">
+            <span className="filter-icon">
+              <button
+                id="basic-button"
+                aria-controls={open ? 'basic-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? 'true' : undefined}
+                onClick={handleClick}
+              >
+                <FaFilter/>
+              </button>
+              <Menu
+                id="basic-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+                slotProps={{
+                  list: {
+                    'aria-labelledby': 'basic-button',
+                  },
+                }}
+              >
+                <MenuItem onClick={()=>{handleClose(); setStatusFilter("");}}>All Welders</MenuItem>
+                <MenuItem onClick={()=>{handleClose(); setStatusFilter("IN_STATUS");}}>In Status</MenuItem>
+                <MenuItem onClick={()=>{handleClose(); setStatusFilter("AT_RISK");}}>At Risk</MenuItem>
+                <MenuItem onClick={()=>{handleClose(); setStatusFilter("EXPIRED");}}>Expired</MenuItem>
+              </Menu>
+              </span>
+          </div>
           <div className="topbar-search">
             <span className="search-icon">🔍</span>
             <input className="search-input" placeholder="Search by name or ID"

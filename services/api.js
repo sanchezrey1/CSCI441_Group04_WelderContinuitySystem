@@ -41,3 +41,9 @@ export async function getWelders(){
     if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
     return await res.json();
 }
+
+export async function getWelder(welder_id){
+    const res = await fetch(`${BASE_URL}/api/welder/${welder_id}`);
+    if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
+        return await res.json();
+}

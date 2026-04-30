@@ -4,6 +4,7 @@ import { logout } from "../../services/api";
 import { isLoggedIn } from "../../services/helpers";
 import "./Dashboard.css";
 
+
 const API_BASE = "http://localhost:8000/api";
 
 
@@ -121,6 +122,8 @@ export default function Dashboard() {
   const intervalRef = useRef(null);
   const navigate = useNavigate();
 
+
+ 
   function handleLogout() {
     logout();
     navigate("/");
@@ -183,6 +186,7 @@ export default function Dashboard() {
   if (error) return (
     <div className="app-shell">
       <Sidebar active="Dashboard" />
+      
       <main className="main-content">
         <div className="dash-error">
           <div className="error-icon">⚠</div>
@@ -201,12 +205,14 @@ export default function Dashboard() {
     item.employee_id.toLowerCase().includes(search.toLowerCase())
   );
 
+
   return (
     <div className="app-shell">
       <Sidebar active="Dashboard" />
       <main className="main-content">
 
         <div className="topbar">
+          
           <div className="topbar-search">
             <span className="search-icon">🔍</span>
             <input className="search-input" placeholder="Search by name or ID"

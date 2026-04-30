@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Sidebar } from "./Dashboard";
 import "./Dashboard.css";
-import "./AddWelder.css";
+//import "./AddWelder.css";
 
 const API_BASE = "http://localhost:8000/api";
 

@@ -90,6 +90,7 @@ def seed_demo_data(conn):
     # Qualifications (welder_id, process_id, code_id, qualified_date, expiration_date, status)
     quals = [
         (1,1,1,"2024-01-10",(today+timedelta(days=90)).isoformat(),"IN_STATUS"),
+        (1,2,2,"2024-01-11",(today+timedelta(days=90)).isoformat(),"IN_STATUS"),
         (2,2,2,"2024-03-05",(today+timedelta(days=120)).isoformat(),"IN_STATUS"),
         (3,1,1,"2024-02-20",(today+timedelta(days=80)).isoformat(),"IN_STATUS"),
         (4,3,1,"2023-11-15",(today+timedelta(days=60)).isoformat(),"IN_STATUS"),
