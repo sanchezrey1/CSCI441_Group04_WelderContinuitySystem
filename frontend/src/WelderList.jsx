@@ -90,6 +90,7 @@ export default function WelderListApp() {
 
   useEffect(() => { fetchWelders(); }, []);
 
+  //filter by search bar and status filter choice
   const filtered = welders.filter(w => {
   return statusFilter === ""
     ? (w.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -131,6 +132,7 @@ export default function WelderListApp() {
             <span className="filter-icon">
               <button
                 id="basic-button"
+                className="btn-filter"
                 aria-controls={open ? 'basic-menu' : undefined}
                 aria-haspopup="true"
                 aria-expanded={open ? 'true' : undefined}

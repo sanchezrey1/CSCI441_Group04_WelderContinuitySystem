@@ -50,6 +50,21 @@ function LoginApp() {
   
   async function handleRegister(){
     setError("");
+
+    //Validate email before using API
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if(password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (!/\d/.test(password)){
+      setError("Password must contain at least one number.");
+      return;
+    }
     try{
       const data = await register(email, password)
       if (data.detail){ //if error exists
@@ -62,7 +77,7 @@ function LoginApp() {
       
     } catch (err){
     console.error("Request failed: ", err.message);
-    setError("somwthing went wrong");
+    setError("something went wrong");
     }
   }
 

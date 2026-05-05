@@ -138,6 +138,17 @@ body {
   max-width: 320px;
 }
 
+.btn-filter {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.2rem 0.3rem;
+  text-align: left;
+}
+
 .search-icon { font-size: 0.8rem; color: var(--muted); }
 
 .search-input {

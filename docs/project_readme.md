@@ -188,3 +188,11 @@ created the welder list page containing all the welders styled similarly to the 
 Need to add a sidebar for page navigation as well.
 
 Need to make it so that warning message goes away in login menu after pressing another button
+
+### La Aries NOTES FROM TUESDAY 5/5/2026
+
+Added filter button and styling
+
+Added Welder Card Page
+
+added password and email validation
