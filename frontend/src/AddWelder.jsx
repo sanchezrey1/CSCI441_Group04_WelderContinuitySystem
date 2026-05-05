@@ -10,16 +10,42 @@ export default function AddWelder() {
         first_name: "",
         last_name: "",
         department: "",
-        hire_date: "",
-        qualifications: ""
+        hire_date: ""
     });
+
+    const [errors, setErrors] = useState({});
+
+    const validate = () => {
+    const newErrors = {};
+
+    if (!formData.employee_id.trim())
+        newErrors.employee_id = "Employee ID is required";
+
+    if (!formData.first_name.trim())
+        newErrors.first_name = "First name is required";
+
+    if (!formData.last_name.trim())
+        newErrors.last_name = "Last name is required";
+
+    if (!formData.department)
+        newErrors.department = "Department is required";
+
+    if (!formData.hire_date)
+        newErrors.hire_date = "Hire date is required";
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+};
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async () => {
-        e. preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validate()) return; // stop if invalid
 
         try {
             const res = await fetch(`${API_BASE}/welders/full`, {
@@ -30,12 +56,24 @@ export default function AddWelder() {
 
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.detail);
+            if (!res.ok) {
+                throw new Error(data.detail || "Request failed");
+            }
 
             alert("Welder added!");
+
+            //optional reset
+            setFormData({
+                employee_id: "",
+                first_name: "",
+                last_name: "",
+                department: "",
+                hire_date: "",
+            });
+        
         } catch (err) {
             console.error(err);
-            alert("Error adding welder");
+            alert(err.message);
         }
     };
 
@@ -71,24 +109,42 @@ export default function AddWelder() {
                         <label>Employee ID</label>
                         <input
                             name="employee_id"
-                            placeholder="00067682"
+                            value={formData.employee_id}
+                            placeholder="E000"
                             onChange={handleChange}
                         />
+                        {errors.employee_id && (
+                            <span className="error">{errors.employee_id}</span>
+                        )}
                         </div>
 
                         <div className="form-group">
                         <label>Name</label>
-                        <input
-                            name="full_name"
-                            placeholder="Full Name"
-                            onChange={handleChange}
+                        <input 
+                            name="first_name" 
+                            value={formData.first_name}
+                            placeholder="First Name" 
+                            onChange={handleChange} 
                         />
+                        {errors.first_name && (
+                            <span className="error">{errors.first_name}</span>
+                        )}
+                        <input 
+                            name="last_name"
+                            value={formData.last_name} 
+                            placeholder="Last Name" 
+                            onChange={handleChange} 
+                        />
+                        {errors.last_name && (
+                            <span className="error">{errors.last_name}</span>
+                        )}
                         </div>
 
                         <div className="form-group">
                         <label>Department</label>
                         <select
                             name="department"
+                            value={formData.department}
                             onChange={handleChange}
                         >
                             <option value="">Select a Department</option>
@@ -96,6 +152,9 @@ export default function AddWelder() {
                             <option>Fabrication</option>
                             <option>QA</option>
                         </select>
+                        {errors.department && (
+                            <span className="error">{errors.department}</span>
+                        )}
                         </div>
 
                         <div className="form-group">
@@ -103,30 +162,12 @@ export default function AddWelder() {
                         <input
                             type="date"
                             name="hire_date"
+                            value={formData.hire_date}
                             onChange={handleChange}
                         />
-                        </div>
-
-                        <div className="form-group">
-                        <label>Role</label>
-                        <select
-                            name="role"
-                            onChange={handleChange}
-                        >
-                            <option value="">Select a Role</option>
-                            <option>Welder</option>
-                            <option>Supervisor</option>
-                            <option>Inspector</option>
-                        </select>
-                        </div>
-
-                        <div className="form-group">
-                        <label>Qualifications</label>
-                        <input
-                            name="qualifications"
-                            placeholder="Select or Add All Qualification(s)"
-                            onChange={handleChange}
-                        />
+                        {errors.hire_date && (
+                            <span className="error">{errors.hire_date}</span>
+                        )}
                         </div>
 
                         <button type="submit" className="add-record-btn">

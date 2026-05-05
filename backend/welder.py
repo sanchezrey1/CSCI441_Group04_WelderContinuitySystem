@@ -84,6 +84,46 @@ def welder(welder_id: int):
         if row["qualification_id"] is not None  # handles welders with no qualifications
     ]
     }
-    
+   
     conn.close()
     return welder
+
+@router.post("/api/welders/full")
+def create_welder(welder: dict):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO welders (
+                employee_id,
+                first_name,
+                last_name,
+                department,
+                hire_date
+            )
+            VALUES (?, ?, ?, ?, ?)
+        """, (
+            welder["employee_id"],
+            welder["first_name"],
+            welder["last_name"],
+            welder["department"],
+            welder["hire_date"]
+        ))
+
+        conn.commit()
+
+        return {"message": "Welder created successfully"}
+
+    except sqlite3.IntegrityError as e:
+        # ⭐ THIS is where HTTP 409 happens
+        if "UNIQUE constraint failed: welders.employee_id" in str(e):
+            raise HTTPException(
+                status_code=409,
+                detail="Employee ID already exists"
+            )
+
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        conn.close()
