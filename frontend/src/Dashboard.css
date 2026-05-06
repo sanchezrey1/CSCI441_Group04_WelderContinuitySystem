@@ -660,3 +660,21 @@ body {
     margin-top: 4px;
     display: block;
 }
+
+.edit-form {
+    background: #fff;
+    padding: 16px;
+    border: 1px solid #ddd;
+    margin-top: 16px;
+}
+
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-edit {
+    padding: 6px 12px;
+    cursor: pointer;
+}

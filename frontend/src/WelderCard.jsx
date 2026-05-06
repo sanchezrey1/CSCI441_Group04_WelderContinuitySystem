@@ -1,20 +1,27 @@
 import { getWelder, logout } from "../../services/api";
 import { Sidebar } from "./Dashboard";
-import {useParams} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import { useState, useEffect } from "react";
 import { isLoggedIn } from "../../services/helpers";
+
 function WelderCard() {
+    const navigate = useNavigate();
+
     const [lastRefresh, setLastRefresh] = useState(null);
     const [welder, setWelder] = useState(null)
     const [loading, setLoading]   = useState(true);
     const [error, setError]       = useState(null);
     const { welder_id } = useParams();
-    
+
+    //edit state
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState(null);
+    const [editError, setEditError] = useState("");
+   
     useEffect(() => {
         const p = isLoggedIn();
         if (!p) { navigate("/"); return; }
       }, []);
-
     
     const fetchWelder = async (welder_id) => {
         try {
@@ -32,11 +39,64 @@ function WelderCard() {
     useEffect(() => {
         fetchWelder(welder_id)
     },[welder_id])
+
+    //edit form
+    useEffect(() => {
+        if (welder) {
+            setEditForm({
+                employee_id: welder.employee_id,
+                first_name: welder.welder_name.split(" ")[0] || "",
+                last_name: welder.welder_name.split(" ")[1] || "",
+                department: welder.department
+             });
+            }
+    }, [welder]);
+
+    const handleEditChange = (e) => {
+        if (!editForm) return;
+
+        setEditForm({
+            ...editForm,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    //update welder
+    const handleUpdate = async (e) => {
+        e.preventDefault();
+
+        try {
+            setEditError("");
+
+            const res = await fetch(
+                `http://localhost:8000/api/welders/${welder_id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(editForm)
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.detail || "Update failed");
+            }
+
+            alert("Welder updated!");
+
+            setIsEditing(false);
+            fetchWelder(welder_id);
+        } catch (err) {
+            setEditError(err.message);
+        }
+    };
       
     function handleLogout() {
         logout();
         navigate("/");
     }
+
 // ── Welder Profile ──────────────────────────────────────────────────────────────
     function WelderProfile({welder}){
         function getWorstStatus(welder) {
@@ -141,6 +201,14 @@ function WelderCard() {
         <main className="main-content">
         <div className="topbar">
           <div className="">Welder Detailed Information</div>
+          
+          <button
+            onClick={() => setIsEditing(true)}
+            className="btn-edit"
+            >
+                Edit
+            </button>
+
           {lastRefresh && (
             <span className="topbar-right">
               Updated {lastRefresh.toLocaleTimeString()}
@@ -148,6 +216,55 @@ function WelderCard() {
           )}
           <button onClick={handleLogout} className="btn-logout">Logout</button>
         </div>
+
+        {/*edit form*/}
+        {isEditing && editForm && (
+            <form className="edit-form" onSubmit={handleUpdate}>
+
+                <h3>Edit Welder</h3>
+
+                {editError && (
+                    <div className="error-banner">{editError}</div>
+                )}
+
+                <input
+                    name="employee_id"
+                    value={editForm.employee_id}
+                    onChange={handleEditChange}
+                />
+
+                <input
+                    name="first_name"
+                    value={editForm.first_name}
+                    onChange={handleEditChange}
+                />
+
+                <input
+                    name="last_name"
+                    value={editForm.last_name}
+                    onChange={handleEditChange}
+                />
+
+                <select
+                    name="department"
+                    value={editForm.department}
+                    onChange={handleEditChange}
+                 >
+                    <option value="">Select a Department</option>
+                            <option>Structural</option>
+                            <option>Fabrication</option>
+                            <option>Pipeline</option>
+                </select>
+
+                <div className="edit-actions">
+                    <button type="submit">Save</button>
+                    <button type="button" onClick={() => setIsEditing(false)}>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        )}
+
           
             {welder && <WelderProfile welder={welder}/>}
     
