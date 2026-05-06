@@ -47,3 +47,12 @@ export async function getWelder(welder_id){
     if (!res.ok) throw new Error(`HTTP error: ${res.status}`)
         return await res.json();
 }
+
+export async function getDashboard(){
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${BASE_URL}/api/dashboard`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+    return await res.json();
+}

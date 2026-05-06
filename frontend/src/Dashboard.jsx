@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../services/api";
+import { logout, getDashboard } from "../../services/api";
 import { isLoggedIn } from "../../services/helpers";
 import "./Dashboard.css";
 
-
-const API_BASE = "http://localhost:8000/api";
 
 
 // ── Shared Sidebar ────────────────────────────────────────────────────────────
@@ -87,11 +85,16 @@ function StatusBadge({ status }) {
 
 // ── Action card ───────────────────────────────────────────────────────────────
 function ActionCard({ item }) {
+  const navigate = useNavigate();
   const expDate = new Date(item.expiration_date).toLocaleDateString("en-US", {
     month: "short", day: "2-digit", year: "numeric",
   });
   return (
-    <div className={`action-card ${item.status === "EXPIRED" ? "card-expired" : "card-at-risk"}`}>
+    <div
+      className={`action-card action-card-clickable ${item.status === "EXPIRED" ? "card-expired" : "card-at-risk"}`}
+      onClick={() => navigate(`/welderCard/${item.welder_id}`)}
+      title="View welder profile"
+    >
       <div className="action-card-name">{item.name}</div>
       <div className="action-card-desc">{item.process_name} · {item.code_name}</div>
       <div className="action-card-footer">
@@ -103,9 +106,14 @@ function ActionCard({ item }) {
 }
 
 // ── Stat tile ─────────────────────────────────────────────────────────────────
-function StatTile({ label, count }) {
+function StatTile({ label, count, filterStatus }) {
+  const navigate = useNavigate();
   return (
-    <div className="stat-tile">
+    <div
+      className="stat-tile stat-tile-clickable"
+      onClick={() => navigate(`/welderlist${filterStatus ? `?status=${filterStatus}` : ""}`)}
+      title={`View ${label} welders`}
+    >
       <span className="stat-label">{label}</span>
       <span className="stat-count">{count}</span>
     </div>
@@ -137,12 +145,8 @@ export default function Dashboard() {
 
   const fetchDashboard = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE}/dashboard`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-      setData(await res.json());
+      const json = await getDashboard();
+      setData(json);
       setLastRefresh(new Date());
       setError(null);
     } catch (err) {
@@ -229,9 +233,9 @@ export default function Dashboard() {
         <div className="page-body">
 
           <div className="stat-grid">
-            <StatTile label="Non-Compliant" count={expired_count} />
-            <StatTile label="At Risk"       count={at_risk_count} />
-            <StatTile label="Compliant"     count={compliant_count} />
+            <StatTile label="Non-Compliant" count={expired_count}   filterStatus="EXPIRED"   />
+            <StatTile label="At Risk"       count={at_risk_count}   filterStatus="AT_RISK"   />
+            <StatTile label="Compliant"     count={compliant_count} filterStatus="IN_STATUS" />
           </div>
 
           <div className="chart-row">
