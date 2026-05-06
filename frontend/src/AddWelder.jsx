@@ -10,10 +10,12 @@ export default function AddWelder() {
         first_name: "",
         last_name: "",
         department: "",
-        hire_date: ""
+        hire_date: "", 
+        qualifications: ""
     });
 
     const [errors, setErrors] = useState({});
+    const [submitError, setSubmitError] = useState("");
 
     const validate = () => {
     const newErrors = {};
@@ -48,16 +50,26 @@ export default function AddWelder() {
         if (!validate()) return; // stop if invalid
 
         try {
+            setSubmitError("");
+
             const res = await fetch(`${API_BASE}/welders/full`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData)
             });
 
-            const data = await res.json();
-
             if (!res.ok) {
-                throw new Error(data.detail || "Request failed");
+                let message = "Request failed";
+
+                try {
+                    const errorData = await res.json();
+                    message = errorData.detail || message;
+                } catch {
+                    // fallback if response is not JSON
+                    message = await res.text();
+                }
+
+                throw new Error(message);
             }
 
             alert("Welder added!");
@@ -69,11 +81,15 @@ export default function AddWelder() {
                 last_name: "",
                 department: "",
                 hire_date: "",
+                qualifications: ""
             });
+
+            setErrors({});
+            setSubmitError("");
         
         } catch (err) {
             console.error(err);
-            alert(err.message);
+            setSubmitError(err.message);
         }
     };
 
@@ -82,6 +98,7 @@ export default function AddWelder() {
             <Sidebar active="Add Welder" />
 
             <main className="main-content">
+
                 {/* top bar */}
                 <div className="topbar">
                     <div className="topbar-search">
@@ -100,13 +117,22 @@ export default function AddWelder() {
 
             <div className="form-card">
                 <div className="form-title">
-                    Welder Registration
+                    <b>Welder Registration</b>
                     </div>
+                    <br></br>
+                    <br></br>
+
+                    {/*Global Error */}
+                    {submitError && (
+                        <div className="error-banner">
+                            {submitError}
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="form-group">
                         
                         <div className="form-group">
-                        <label>Employee ID</label>
+                        <label>Employee ID</label>&emsp;
                         <input
                             name="employee_id"
                             value={formData.employee_id}
@@ -117,15 +143,16 @@ export default function AddWelder() {
                             <span className="error">{errors.employee_id}</span>
                         )}
                         </div>
+                        <br></br>
 
                         <div className="form-group">
-                        <label>Name</label>
+                        <label>Name</label>&emsp;
                         <input 
                             name="first_name" 
                             value={formData.first_name}
                             placeholder="First Name" 
                             onChange={handleChange} 
-                        />
+                        />&ensp;
                         {errors.first_name && (
                             <span className="error">{errors.first_name}</span>
                         )}
@@ -139,26 +166,28 @@ export default function AddWelder() {
                             <span className="error">{errors.last_name}</span>
                         )}
                         </div>
+                        <br></br>
 
                         <div className="form-group">
-                        <label>Department</label>
+                        <label>Department</label>&emsp;
                         <select
                             name="department"
                             value={formData.department}
                             onChange={handleChange}
                         >
                             <option value="">Select a Department</option>
-                            <option>Production</option>
+                            <option>Structural</option>
                             <option>Fabrication</option>
-                            <option>QA</option>
+                            <option>Pipeline</option>
                         </select>
                         {errors.department && (
                             <span className="error">{errors.department}</span>
                         )}
                         </div>
+                        <br></br>
 
                         <div className="form-group">
-                        <label>Hire Date</label>
+                        <label>Hire Date</label>&emsp;
                         <input
                             type="date"
                             name="hire_date"
@@ -169,6 +198,18 @@ export default function AddWelder() {
                             <span className="error">{errors.hire_date}</span>
                         )}
                         </div>
+                        <br></br>
+
+                        <div className="form-group">
+                        <label>Qualifications</label>&emsp;
+                        <input
+                            name="qualifications"
+                            value={formData.qualifications}
+                            placeholder="Select or Add All Qualification(s)"
+                            onChange={handleChange}
+                        />
+                        </div>
+                        <br></br>
 
                         <button type="submit" className="add-record-btn">
                             Add Record
