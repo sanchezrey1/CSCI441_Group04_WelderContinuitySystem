@@ -47,7 +47,8 @@ function WelderCard() {
                 employee_id: welder.employee_id,
                 first_name: welder.welder_name.split(" ")[0] || "",
                 last_name: welder.welder_name.split(" ")[1] || "",
-                department: welder.department
+                department: welder.department,
+                qualifications: welder.qualifications || []
              });
             }
     }, [welder]);
@@ -60,6 +61,44 @@ function WelderCard() {
             [e.target.name]: e.target.value
         });
     };
+
+    const handleQualificationChange = (index, field, value) => {
+    const updatedQualifications = [...editForm.qualifications];
+
+    updatedQualifications[index] = {
+        ...updatedQualifications[index],
+        [field]: value
+    };
+
+    setEditForm({
+        ...editForm,
+        qualifications: updatedQualifications
+    });
+};
+
+const addQualification = () => {
+    setEditForm({
+        ...editForm,
+        qualifications: [
+            ...editForm.qualifications,
+            {
+                process: "",
+                continuity_date: "",
+                expiration_date: ""
+            }
+        ]
+    });
+};
+
+const removeQualification = (index) => {
+    const updatedQualifications =
+        editForm.qualifications.filter((_, i) => i !== index);
+
+    setEditForm({
+        ...editForm,
+        qualifications: updatedQualifications
+    });
+};
 
     //update welder
     const handleUpdate = async (e) => {
@@ -307,14 +346,72 @@ function WelderCard() {
                             <option>Pipeline</option>
                 </select>
 
-                <div className="edit-actions">
-                    <button type="submit">Save</button>
-                    <button type="button" onClick={() => setIsEditing(false)}>
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        )}
+                <h4>Qualifications</h4>
+
+                {editForm.qualifications.map((qual, index) => (
+                    <div key={index} className="qualification-edit-card">
+
+                        <input
+                            type="text"
+                            placeholder="Process"
+                            value={qual.process}
+                            onChange={(e) =>
+                                handleQualificationChange(
+                                    index,
+                                    "process",
+                                    e.target.value
+                                )
+                            }
+                        />
+
+                        <input
+                            type="date"
+                            value={qual.continuity_date || ""}
+                            onChange={(e) =>
+                                handleQualificationChange(
+                                 index,
+                                  "continuity_date",
+                                  e.target.value
+                                )
+                            }
+                     />
+
+                        <input
+                           type="date"
+                           value={qual.expiration_date || ""}
+                           onChange={(e) =>
+                               handleQualificationChange(
+                                    index,
+                                     "expiration_date",
+                                        e.target.value
+                                 )
+                         }
+                     />
+
+                     <button
+                         type="button"
+                            onClick={() => removeQualification(index)}
+                        >
+                         Remove
+                        </button>
+                    </div>
+                ))}
+
+                <button
+                    type="button"
+                    onClick={addQualification}
+                >
+                    Add Qualification
+                </button>
+
+                                <div className="edit-actions">
+                                    <button type="submit">Save</button>
+                                    <button type="button" onClick={() => setIsEditing(false)}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        )}
 
           
             {welder && <WelderProfile welder={welder}/>}

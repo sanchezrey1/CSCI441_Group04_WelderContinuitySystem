@@ -77,6 +77,7 @@ class WelderCreate(BaseModel):
     last_name: str
     department: str
     hire_date: str
+    qualifications: list = []
 
 @router.post("/api/welders")
 def add_welder(welder: WelderCreate):
@@ -96,10 +97,27 @@ def add_welder(welder: WelderCreate):
             welder.hire_date
         ))
 
-        conn.commit()
-
         welder_id = cursor.lastrowid
+
+        # add qualifications
+        for qual in welder.qualifications:
+
+            cursor.execute("""
+                INSERT INTO qualifications
+                (
+                    welder_id,
+                    expiration_date
+                )
+                VALUES (?, ?)
+            """, (
+                welder_id,
+                qual["expiration_date"]
+            ))
+        
+        conn.commit()
+        
         return {"message": "Welder added", "welder_id": welder_id}
+    
 
     except sqlite3.IntegrityError:
         raise HTTPException(status_code=400, detail="Employee ID already exists")

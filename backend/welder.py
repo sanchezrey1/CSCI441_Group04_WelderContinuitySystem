@@ -161,11 +161,17 @@ def create_welder(welder: dict):
     finally:
         conn.close()
 
+class QualificationUpdate(BaseModel):
+    qualification_id: int | None = None
+    expiration_date: str
+
+
 class WelderUpdate(BaseModel):
     employee_id: str
     first_name: str
     last_name: str
     department: str
+    qualifications: list[QualificationUpdate] = []
 
 
 @router.put("/api/welders/{welder_id}")
@@ -200,6 +206,25 @@ def update_welder(welder_id: int, welder: WelderUpdate):
             welder.department,
             welder_id
         ))
+
+        # delete old qualifications
+        cursor.execute("""
+            DELETE FROM qualifications
+            WHERE welder_id = ?
+        """, (welder_id,))
+
+        # insert updated qualifications
+        for qual in welder.qualifications:
+            cursor.execute("""
+                INSERT INTO qualifications (
+                    welder_id,
+                    expiration_date
+                )
+                VALUES (?, ?)
+            """, (
+                welder_id,
+                qual.expiration_date
+            ))
 
         conn.commit()
 
