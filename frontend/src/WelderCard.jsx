@@ -91,7 +91,40 @@ function WelderCard() {
             setEditError(err.message);
         }
     };
-      
+    
+    //deactivate welder
+    const handleDeactivate = async () => {
+
+    const confirmDeactivate = window.confirm(
+        "Are you sure you want to deactivate this welder?"
+    );
+
+    if (!confirmDeactivate) return;
+
+    try {
+
+        const res = await fetch(
+            `http://localhost:8000/api/welders/${welder_id}/deactivate`,
+            {
+                method: "PUT"
+            }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.detail || "Deactivate failed");
+        }
+
+        alert("Welder deactivated");
+
+        fetchWelder(welder_id);
+
+    } catch (err) {
+        alert(err.message);
+    }
+};
+
     function handleLogout() {
         logout();
         navigate("/");
@@ -99,6 +132,8 @@ function WelderCard() {
 
 // ── Welder Profile ──────────────────────────────────────────────────────────────
     function WelderProfile({welder}){
+        const isDeactivated = welder.employment_status === "Inactive";
+
         function getWorstStatus(welder) {
         if (welder.expired_count > 0) return "EXPIRED";
         if (welder.at_risk_count > 0) return "AT_RISK";
@@ -123,7 +158,11 @@ function WelderCard() {
     const total = welder.compliant_count + welder.at_risk_count + welder.expired_count;
     const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0;
     return (
-        <section className="wp-section">
+        <section
+        className={`wp-section ${
+          isDeactivated ? "wp-deactivated" : ""
+        }`}
+      >
     
         {/* ── Top row ── */}
         <div className="wp-top-row">
@@ -134,6 +173,11 @@ function WelderCard() {
                 <span className="wp-name">{welder.welder_name}</span>
                 <span className="wp-id">ID: {welder.employee_id}</span>
             </div>
+
+            {isDeactivated && (
+              <div className="wp-deactivated-badge">DEACTIVATED</div>
+            )}
+
             <div className="wp-divider" />
             <div className="wp-info-body">
                 <span className="wp-dept">{welder.department}</span>
@@ -207,6 +251,13 @@ function WelderCard() {
             className="btn-edit"
             >
                 Edit
+            </button>
+
+            <button
+                onClick={handleDeactivate}
+                className="btn-deactivate"
+            >
+                Deactivate
             </button>
 
           {lastRefresh && (

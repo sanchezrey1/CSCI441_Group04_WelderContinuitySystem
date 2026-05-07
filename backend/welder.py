@@ -73,6 +73,7 @@ def welder(welder_id: int):
     "employee_id": rows[0]["employee_id"],
     "department": rows[0]["department"],
     "employment_status": rows[0]["employment_status"],
+    "deactivated": rows[0]["employment_status"] == "Inactive",
     "hire_date": rows[0]["hire_date"],
     "compliant_count": compliant,
     "at_risk_count":   at_risk,
@@ -89,6 +90,37 @@ def welder(welder_id: int):
    
     conn.close()
     return welder
+
+@router.get("/api/welders")
+def get_welders():
+    conn = get_db()
+
+    rows = conn.execute("""
+        SELECT
+            welder_id,
+            employee_id,
+            first_name,
+            last_name,
+            department,
+            employment_status
+        FROM welders
+    """).fetchall()
+
+    conn.close()
+
+    return {
+        "welders": [
+            {
+                "welder_id": r["welder_id"],
+                "employee_id": r["employee_id"],
+                "name": f'{r["first_name"]} {r["last_name"]}',
+                "department": r["department"],
+                "employment_status": r["employment_status"],
+                "deactivated": r["employment_status"] == "Inactive"
+            }
+            for r in rows
+        ]
+    }
 
 @router.post("/api/welders/full")
 def create_welder(welder: dict):
@@ -118,7 +150,6 @@ def create_welder(welder: dict):
         return {"message": "Welder created successfully"}
 
     except sqlite3.IntegrityError as e:
-        # ⭐ THIS is where HTTP 409 happens
         if "UNIQUE constraint failed: welders.employee_id" in str(e):
             raise HTTPException(
                 status_code=409,
@@ -186,3 +217,19 @@ def update_welder(welder_id: int, welder: WelderUpdate):
 
     finally:
         conn.close()
+
+@router.put("/api/welders/{welder_id}/deactivate")
+def deactivate_welder(welder_id: int):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE welders
+        SET employment_status = 'Inactive'
+        WHERE welder_id = ?
+    """, (welder_id,))
+
+    conn.commit()
+    conn.close()
+
+    return {"message": "Welder deactivated successfully"}

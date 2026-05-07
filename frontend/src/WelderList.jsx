@@ -37,7 +37,12 @@ function WelderCard({ item }) {
           <StatusBadge status={item.worst_status} />
           <span className="action-card-dept">{item.department}</span>
         </div>
-        <div className="action-card-name">{item.name}</div>
+
+      <div className="action-card-name">
+          {item.deactivated ? "🚫 " : ""}
+          {item.name}
+        </div>
+        
         <div className="action-card-sub">ID: {item.employee_id}</div>
         <div className="action-card-desc">
           {item.total_qualifications} qualification{item.total_qualifications !== 1 ? "s" : ""}
@@ -91,14 +96,21 @@ export default function WelderListApp() {
   useEffect(() => { fetchWelders(); }, []);
 
   //filter by search bar and status filter choice
-  const filtered = welders.filter(w => {
-  return statusFilter === ""
-    ? (w.name.toLowerCase().includes(search.toLowerCase()) ||
-       w.employee_id.toLowerCase().includes(search.toLowerCase()))
-    : (w.worst_status.includes(statusFilter) &&
-       (w.name.toLowerCase().includes(search.toLowerCase()) ||
-        w.employee_id.toLowerCase().includes(search.toLowerCase())));
+const filtered = welders.filter(w => {
+  const q = (search || "").toLowerCase();
+
+  const name = (w.name || "").toLowerCase();
+  const id = String(w.employee_id || "").toLowerCase();
+
+  const matchesSearch =
+    name.includes(q) || id.includes(q);
+
+  const statusOk =
+    statusFilter === "" || w.worst_status === statusFilter;
+
+  return matchesSearch && statusOk;
 });
+
   if (loading) return (
     <div className="app-shell">
       <Sidebar active="Welder List" />

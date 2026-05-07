@@ -698,3 +698,18 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
+.wp-deactivated {
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.wp-deactivated-badge {
+  background: #444;
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-top: 6px;
+}
