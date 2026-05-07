@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { getWelders, logout } from "../../services/api";
 import { isLoggedIn } from "../../services/helpers";
 import { Sidebar } from "./Dashboard";
@@ -61,7 +61,12 @@ export default function WelderListApp() {
   const [lastRefresh, setLastRefresh] = useState(null);
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [statusFilter, setStatusFilter] = useState("")
+  const [statusFilter, setStatusFilter] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  useEffect(() => {
+    const s = searchParams.get("status");
+    if (s) setStatusFilter(s);
+  }, [searchParams]);
 
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -70,6 +75,15 @@ export default function WelderListApp() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  function handleStatusFilter(value) {
+    setStatusFilter(value);
+    if (value === "") {
+      setSearchParams({});
+    } else {
+      setSearchParams({ status: value });
+    }
+  }
 
   useEffect(() => {
     const p = isLoggedIn();
@@ -163,10 +177,10 @@ const filtered = welders.filter(w => {
                   },
                 }}
               >
-                <MenuItem onClick={()=>{handleClose(); setStatusFilter("");}}>All Welders</MenuItem>
-                <MenuItem onClick={()=>{handleClose(); setStatusFilter("IN_STATUS");}}>In Status</MenuItem>
-                <MenuItem onClick={()=>{handleClose(); setStatusFilter("AT_RISK");}}>At Risk</MenuItem>
-                <MenuItem onClick={()=>{handleClose(); setStatusFilter("EXPIRED");}}>Expired</MenuItem>
+                <MenuItem onClick={()=>{handleClose(); handleStatusFilter("");}}>All Welders</MenuItem>
+                <MenuItem onClick={()=>{handleClose(); handleStatusFilter("IN_STATUS");}}>In Status</MenuItem>
+                <MenuItem onClick={()=>{handleClose(); handleStatusFilter("AT_RISK");}}>At Risk</MenuItem>
+                <MenuItem onClick={()=>{handleClose(); handleStatusFilter("EXPIRED");}}>Expired</MenuItem>
               </Menu>
               </span>
           </div>
