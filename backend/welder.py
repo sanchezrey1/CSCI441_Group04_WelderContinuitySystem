@@ -72,6 +72,8 @@ def welder(welder_id: int):
     "welder_name": rows[0]["welder_name"],
     "employee_id": rows[0]["employee_id"],
     "department": rows[0]["department"],
+    "employment_status": rows[0]["employment_status"],
+    "hire_date": rows[0]["hire_date"],
     "compliant_count": compliant,
     "at_risk_count":   at_risk,
     "expired_count":   expired,
@@ -117,6 +119,63 @@ def create_welder(welder: dict):
 
     except sqlite3.IntegrityError as e:
         # ⭐ THIS is where HTTP 409 happens
+        if "UNIQUE constraint failed: welders.employee_id" in str(e):
+            raise HTTPException(
+                status_code=409,
+                detail="Employee ID already exists"
+            )
+
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        conn.close()
+
+class WelderUpdate(BaseModel):
+    employee_id: str
+    first_name: str
+    last_name: str
+    department: str
+
+
+@router.put("/api/welders/{welder_id}")
+def update_welder(welder_id: int, welder: WelderUpdate):
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # check if welder exists
+    existing = cursor.execute(
+        "SELECT * FROM welders WHERE welder_id = ?",
+        (welder_id,)
+    ).fetchone()
+
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Welder not found")
+
+    try:
+        cursor.execute("""
+            UPDATE welders
+            SET
+                employee_id = ?,
+                first_name = ?,
+                last_name = ?,
+                department = ?
+            WHERE welder_id = ?
+        """, (
+            welder.employee_id,
+            welder.first_name,
+            welder.last_name,
+            welder.department,
+            welder_id
+        ))
+
+        conn.commit()
+
+        return {"message": "Welder updated successfully"}
+
+    except sqlite3.IntegrityError as e:
+
         if "UNIQUE constraint failed: welders.employee_id" in str(e):
             raise HTTPException(
                 status_code=409,

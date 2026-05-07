@@ -8,7 +8,7 @@ function WelderCard() {
     const navigate = useNavigate();
 
     const [lastRefresh, setLastRefresh] = useState(null);
-    const [welder, setWelder] = useState(null)
+    const [welder, setWelder] = useState(null);
     const [loading, setLoading]   = useState(true);
     const [error, setError]       = useState(null);
     const { welder_id } = useParams();
