@@ -1,6 +1,6 @@
 import { getWelder, logout } from "../../services/api";
 import { Sidebar } from "./Dashboard";
-import {useParams, useNavigate} from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { isLoggedIn } from "../../services/helpers";
 
@@ -9,98 +9,59 @@ function WelderCard() {
 
     const [lastRefresh, setLastRefresh] = useState(null);
     const [welder, setWelder] = useState(null);
-    const [loading, setLoading]   = useState(true);
-    const [error, setError]       = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const { welder_id } = useParams();
 
-    //edit state
+    // edit state (NO qualifications anymore)
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState(null);
     const [editError, setEditError] = useState("");
-   
+
     useEffect(() => {
         const p = isLoggedIn();
-        if (!p) { navigate("/"); return; }
-      }, []);
-    
+        if (!p) {
+            navigate("/");
+            return;
+        }
+    }, []);
+
     const fetchWelder = async (welder_id) => {
         try {
-          const data = await getWelder(welder_id);
-          setWelder(data);
-          console.log(data)
-          setLastRefresh(new Date());
+            const data = await getWelder(welder_id);
+            setWelder(data);
+            setLastRefresh(new Date());
         } catch (err) {
-          setError(err.message);
+            setError(err.message);
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      };
+    };
 
     useEffect(() => {
-        fetchWelder(welder_id)
-    },[welder_id])
+        fetchWelder(welder_id);
+    }, [welder_id]);
 
-    //edit form
+    // initialize edit form (NO qualifications)
     useEffect(() => {
         if (welder) {
             setEditForm({
                 employee_id: welder.employee_id,
                 first_name: welder.welder_name.split(" ")[0] || "",
                 last_name: welder.welder_name.split(" ")[1] || "",
-                department: welder.department,
-                qualifications: welder.qualifications || []
-             });
-            }
+                department: welder.department
+            });
+        }
     }, [welder]);
 
     const handleEditChange = (e) => {
-        if (!editForm) return;
-
         setEditForm({
             ...editForm,
             [e.target.name]: e.target.value
         });
     };
 
-    const handleQualificationChange = (index, field, value) => {
-    const updatedQualifications = [...editForm.qualifications];
-
-    updatedQualifications[index] = {
-        ...updatedQualifications[index],
-        [field]: value
-    };
-
-    setEditForm({
-        ...editForm,
-        qualifications: updatedQualifications
-    });
-};
-
-const addQualification = () => {
-    setEditForm({
-        ...editForm,
-        qualifications: [
-            ...editForm.qualifications,
-            {
-                process: "",
-                continuity_date: "",
-                expiration_date: ""
-            }
-        ]
-    });
-};
-
-const removeQualification = (index) => {
-    const updatedQualifications =
-        editForm.qualifications.filter((_, i) => i !== index);
-
-    setEditForm({
-        ...editForm,
-        qualifications: updatedQualifications
-    });
-};
-
-    //update welder
+    // update welder (simple payload only)
     const handleUpdate = async (e) => {
         e.preventDefault();
 
@@ -126,299 +87,244 @@ const removeQualification = (index) => {
 
             setIsEditing(false);
             fetchWelder(welder_id);
+
         } catch (err) {
             setEditError(err.message);
         }
     };
-    
-    //deactivate welder
+
+    // deactivate welder
     const handleDeactivate = async () => {
-
-    const confirmDeactivate = window.confirm(
-        "Are you sure you want to deactivate this welder?"
-    );
-
-    if (!confirmDeactivate) return;
-
-    try {
-
-        const res = await fetch(
-            `http://localhost:8000/api/welders/${welder_id}/deactivate`,
-            {
-                method: "PUT"
-            }
+        const confirmDeactivate = window.confirm(
+            "Are you sure you want to deactivate this welder?"
         );
 
-        const data = await res.json();
+        if (!confirmDeactivate) return;
 
-        if (!res.ok) {
-            throw new Error(data.detail || "Deactivate failed");
+        try {
+            const res = await fetch(
+                `http://localhost:8000/api/welders/${welder_id}/deactivate`,
+                {
+                    method: "PUT"
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.detail || "Deactivate failed");
+            }
+
+            alert("Welder deactivated");
+            fetchWelder(welder_id);
+
+        } catch (err) {
+            alert(err.message);
         }
-
-        alert("Welder deactivated");
-
-        fetchWelder(welder_id);
-
-    } catch (err) {
-        alert(err.message);
-    }
-};
+    };
 
     function handleLogout() {
         logout();
         navigate("/");
     }
 
-// ── Welder Profile ──────────────────────────────────────────────────────────────
-    function WelderProfile({welder}){
+    // ── Welder Profile ─────────────────────────────────────────────
+    function WelderProfile({ welder }) {
         const isDeactivated = welder.employment_status === "Inactive";
 
         function getWorstStatus(welder) {
-        if (welder.expired_count > 0) return "EXPIRED";
-        if (welder.at_risk_count > 0) return "AT_RISK";
-        return "IN_STATUS";
+            if (welder.expired_count > 0) return "EXPIRED";
+            if (welder.at_risk_count > 0) return "AT_RISK";
+            return "IN_STATUS";
         }
-        
+
         const STATUS_LABEL = {
-        EXPIRED:   "Expired",
-        AT_RISK:   "At-Risk",
-        IN_STATUS: "Compliant",
+            EXPIRED: "Expired",
+            AT_RISK: "At-Risk",
+            IN_STATUS: "Compliant",
         };
-        
+
         const STATUS_CLASS = {
-        EXPIRED:   "status--expired",
-        AT_RISK:   "status--at-risk",
-        IN_STATUS: "status--compliant",
+            EXPIRED: "status--expired",
+            AT_RISK: "status--at-risk",
+            IN_STATUS: "status--compliant",
         };
 
-         if (!welder) return null;
- 
-    const worstStatus = getWorstStatus(welder);
-    const total = welder.compliant_count + welder.at_risk_count + welder.expired_count;
-    const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0;
-    return (
-        <section
-        className={`wp-section ${
-          isDeactivated ? "wp-deactivated" : ""
-        }`}
-      >
-    
-        {/* ── Top row ── */}
-        <div className="wp-top-row">
-    
-            {/* Info card */}
-            <div className="wp-card wp-info-card">
-            <div className="wp-info-header">
-                <span className="wp-name">{welder.welder_name}</span>
-                <span className="wp-id">ID: {welder.employee_id}</span>
-            </div>
+        const worstStatus = getWorstStatus(welder);
 
-            {isDeactivated && (
-              <div className="wp-deactivated-badge">DEACTIVATED</div>
-            )}
+        const total =
+            welder.compliant_count +
+            welder.at_risk_count +
+            welder.expired_count;
 
-            <div className="wp-divider" />
-            <div className="wp-info-body">
-                <span className="wp-dept">{welder.department}</span>
-                <span className="wp-meta">Employment Status: {welder.employment_status ?? "Active"}</span>
-                {welder.hire_date && (
-                <span className="wp-meta">
-                    Hire Date:{" "}
-                    {new Date(welder.hire_date).toLocaleDateString("en-US", {
-                    month: "short", day: "numeric", year: "numeric",
-                    })}
-                </span>
-                )}
-            </div>
-            </div>
-    
-    
-            {/* Status card */}
-            <div className={`wp-card wp-status-card ${STATUS_CLASS[worstStatus]}`}>
-            <span className="wp-status-label">Qualification Status</span>
-            <span className="wp-status-value">{STATUS_LABEL[worstStatus]}</span>
-            </div>
-            {/* Percentage card */}
-            <div className="wp-card wp-percent-card">
-            <span className="wp-status-label">Breakdown</span>
-            <div className="wp-percent-row">
-                <span className="wp-percent-title">Compliant</span>
-                <span className="wp-percent-num wp-count--compliant">{pct(welder.compliant_count)}%</span>
-            </div>
-            <div className="wp-percent-row">
-                <span className="wp-percent-title">At-Risk</span>
-                <span className="wp-percent-num wp-count--at-risk">{pct(welder.at_risk_count)}%</span>
-            </div>
-            <div className="wp-percent-row">
-                <span className="wp-percent-title">Expired</span>
-                <span className="wp-percent-num wp-count--expired">{pct(welder.expired_count)}%</span>
-            </div>
-            </div>
-        </div>
-        
-    
-        {/* ── Bottom row – counts ── */}
-        <div className="wp-bottom-row">
-            <div className="wp-card wp-count-card wp-count--expired">
-            <span className="wp-count-title">Expired</span>
-            <span className="wp-count-num">{welder.expired_count}</span>
-            </div>
-            <div className="wp-card wp-count-card wp-count--at-risk">
-            <span className="wp-count-title">Caution</span>
-            <span className="wp-count-num">{welder.at_risk_count}</span>
-            </div>
-            <div className="wp-card wp-count-card wp-count--compliant">
-            <span className="wp-count-title">In-Status</span>
-            <span className="wp-count-num">{welder.compliant_count}</span>
-            </div>
-        </div>
-    
-        </section>
+        const pct = (n) =>
+            total > 0 ? Math.round((n / total) * 100) : 0;
+
+        return (
+            <section className={`wp-section ${isDeactivated ? "wp-deactivated" : ""}`}>
+
+                <div className="wp-top-row">
+
+                    {/* Info */}
+                    <div className="wp-card wp-info-card">
+                        <div className="wp-info-header">
+                            <span className="wp-name">{welder.welder_name}</span>
+                            <span className="wp-id">ID: {welder.employee_id}</span>
+                        </div>
+
+                        {isDeactivated && (
+                            <div className="wp-deactivated-badge">DEACTIVATED</div>
+                        )}
+
+                        <div className="wp-divider" />
+
+                        <div className="wp-info-body">
+                            <span className="wp-dept">{welder.department}</span>
+                            <span className="wp-meta">
+                                Employment Status: {welder.employment_status ?? "Active"}
+                            </span>
+
+                            {welder.hire_date && (
+                                <span className="wp-meta">
+                                    Hire Date:{" "}
+                                    {new Date(welder.hire_date).toLocaleDateString(
+                                        "en-US",
+                                        { month: "short", day: "numeric", year: "numeric" }
+                                    )}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className={`wp-card wp-status-card ${STATUS_CLASS[worstStatus]}`}>
+                        <span className="wp-status-label">Qualification Status</span>
+                        <span className="wp-status-value">{STATUS_LABEL[worstStatus]}</span>
+                    </div>
+
+                    {/* Breakdown */}
+                    <div className="wp-card wp-percent-card">
+                        <span className="wp-status-label">Breakdown</span>
+
+                        <div className="wp-percent-row">
+                            <span>Compliant</span>
+                            <span>{pct(welder.compliant_count)}%</span>
+                        </div>
+
+                        <div className="wp-percent-row">
+                            <span>At-Risk</span>
+                            <span>{pct(welder.at_risk_count)}%</span>
+                        </div>
+
+                        <div className="wp-percent-row">
+                            <span>Expired</span>
+                            <span>{pct(welder.expired_count)}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bottom counts */}
+                <div className="wp-bottom-row">
+
+                    <div className="wp-card wp-count-card wp-count--expired">
+                        <span>Expired</span>
+                        <span>{welder.expired_count}</span>
+                    </div>
+
+                    <div className="wp-card wp-count-card wp-count--at-risk">
+                        <span>Caution</span>
+                        <span>{welder.at_risk_count}</span>
+                    </div>
+
+                    <div className="wp-card wp-count-card wp-count--compliant">
+                        <span>In-Status</span>
+                        <span>{welder.compliant_count}</span>
+                    </div>
+
+                </div>
+            </section>
         );
     }
 
-
-    return(
+    return (
         <div className="app-shell">
-        <Sidebar active="Dashboard" />
-        <main className="main-content">
-        <div className="topbar">
-          <div className="">Welder Detailed Information</div>
-          
-          <button
-            onClick={() => setIsEditing(true)}
-            className="btn-edit"
-            >
-                Edit
-            </button>
+            <Sidebar active="Dashboard" />
 
-            <button
-                onClick={handleDeactivate}
-                className="btn-deactivate"
-            >
-                Deactivate
-            </button>
+            <main className="main-content">
 
-          {lastRefresh && (
-            <span className="topbar-right">
-              Updated {lastRefresh.toLocaleTimeString()}
-            </span>
-          )}
-          <button onClick={handleLogout} className="btn-logout">Logout</button>
-        </div>
+                <div className="topbar">
+                    <div>Welder Detailed Information</div>
 
-        {/*edit form*/}
-        {isEditing && editForm && (
-            <form className="edit-form" onSubmit={handleUpdate}>
+                    <button onClick={() => setIsEditing(true)} className="btn-edit">
+                        Edit
+                    </button>
 
-                <h3>Edit Welder</h3>
+                    <button onClick={handleDeactivate} className="btn-deactivate">
+                        Deactivate
+                    </button>
 
-                {editError && (
-                    <div className="error-banner">{editError}</div>
-                )}
+                    {lastRefresh && (
+                        <span className="topbar-right">
+                            Updated {lastRefresh.toLocaleTimeString()}
+                        </span>
+                    )}
 
-                <input
-                    name="employee_id"
-                    value={editForm.employee_id}
-                    onChange={handleEditChange}
-                />
+                    <button onClick={handleLogout} className="btn-logout">
+                        Logout
+                    </button>
+                </div>
 
-                <input
-                    name="first_name"
-                    value={editForm.first_name}
-                    onChange={handleEditChange}
-                />
+                {/* EDIT FORM (simple only) */}
+                {isEditing && editForm && (
+                    <form className="edit-form" onSubmit={handleUpdate}>
+                        <h3>Edit Welder</h3>
 
-                <input
-                    name="last_name"
-                    value={editForm.last_name}
-                    onChange={handleEditChange}
-                />
-
-                <select
-                    name="department"
-                    value={editForm.department}
-                    onChange={handleEditChange}
-                 >
-                    <option value="">Select a Department</option>
-                            <option>Structural</option>
-                            <option>Fabrication</option>
-                            <option>Pipeline</option>
-                </select>
-
-                <h4>Qualifications</h4>
-
-                {editForm.qualifications.map((qual, index) => (
-                    <div key={index} className="qualification-edit-card">
+                        {editError && (
+                            <div className="error-banner">{editError}</div>
+                        )}
 
                         <input
-                            type="text"
-                            placeholder="Process"
-                            value={qual.process}
-                            onChange={(e) =>
-                                handleQualificationChange(
-                                    index,
-                                    "process",
-                                    e.target.value
-                                )
-                            }
+                            name="employee_id"
+                            value={editForm.employee_id}
+                            onChange={handleEditChange}
                         />
 
                         <input
-                            type="date"
-                            value={qual.continuity_date || ""}
-                            onChange={(e) =>
-                                handleQualificationChange(
-                                 index,
-                                  "continuity_date",
-                                  e.target.value
-                                )
-                            }
-                     />
+                            name="first_name"
+                            value={editForm.first_name}
+                            onChange={handleEditChange}
+                        />
 
                         <input
-                           type="date"
-                           value={qual.expiration_date || ""}
-                           onChange={(e) =>
-                               handleQualificationChange(
-                                    index,
-                                     "expiration_date",
-                                        e.target.value
-                                 )
-                         }
-                     />
+                            name="last_name"
+                            value={editForm.last_name}
+                            onChange={handleEditChange}
+                        />
 
-                     <button
-                         type="button"
-                            onClick={() => removeQualification(index)}
+                        <select
+                            name="department"
+                            value={editForm.department}
+                            onChange={handleEditChange}
                         >
-                         Remove
-                        </button>
-                    </div>
-                ))}
+                            <option value="">Select a Department</option>
+                            <option>Structural</option>
+                            <option>Fabrication</option>
+                            <option>Pipeline</option>
+                        </select>
 
-                <button
-                    type="button"
-                    onClick={addQualification}
-                >
-                    Add Qualification
-                </button>
+                        <div className="edit-actions">
+                            <button type="submit">Save</button>
+                            <button type="button" onClick={() => setIsEditing(false)}>
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                )}
 
-                                <div className="edit-actions">
-                                    <button type="submit">Save</button>
-                                    <button type="button" onClick={() => setIsEditing(false)}>
-                                        Cancel
-                                    </button>
-                                </div>
-                            </form>
-                        )}
+                {welder && <WelderProfile welder={welder} />}
 
-          
-            {welder && <WelderProfile welder={welder}/>}
-    
-
-        </main>
-    </div>
+            </main>
+        </div>
     );
 }
 

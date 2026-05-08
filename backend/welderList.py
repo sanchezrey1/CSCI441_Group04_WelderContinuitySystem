@@ -3,6 +3,7 @@ import sqlite3
 from pathlib import Path
 from datetime import date, timedelta
 from pydantic import BaseModel
+from typing import List
 
 router = APIRouter()
 DB_PATH = Path(__file__).parent.parent / "db" / "myapp.db"
@@ -71,13 +72,19 @@ def welderList():
     return {"welders": welders}
 
 #POST Model
+
+
+class QualificationCreate(BaseModel):
+    process_id: int
+    expiration_date: str
+
 class WelderCreate(BaseModel):
     employee_id: str
     first_name: str
     last_name: str
     department: str
     hire_date: str
-    qualifications: list = []
+    
 
 @router.post("/api/welders")
 def add_welder(welder: WelderCreate):
@@ -99,20 +106,7 @@ def add_welder(welder: WelderCreate):
 
         welder_id = cursor.lastrowid
 
-        # add qualifications
-        for qual in welder.qualifications:
-
-            cursor.execute("""
-                INSERT INTO qualifications
-                (
-                    welder_id,
-                    expiration_date
-                )
-                VALUES (?, ?)
-            """, (
-                welder_id,
-                qual["expiration_date"]
-            ))
+       
         
         conn.commit()
         
